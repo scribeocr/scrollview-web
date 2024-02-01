@@ -1,8 +1,5 @@
-import { ScrollView } from './src/ScrollView.js';
 import fs from "fs";
-import path from "path";
-import { isMainThread } from "worker_threads";
-import { createCanvas } from "canvas";
+import { ScrollViewNode } from './src/ScrollViewNode.js';
 
 const filePath = process.argv[2];
 const outputBase = process.argv[3];
@@ -12,36 +9,10 @@ if (!filePath) {
   process.exit(1);
 }
 
-const sv = new ScrollView();
+const sv = new ScrollViewNode(outputBase);
 
-const createCanvasNode = () => {
-  // The Node.js canvas package does not currently support worke threads
-  // https://github.com/Automattic/node-canvas/issues/1394
-  if (!isMainThread) throw new Error('node-canvas is not currently supported on worker threads.');
+const inputData = fs.readFileSync(filePath, { encoding: "utf-8" });
 
-  const canvas = createCanvas(200, 200);
+await sv.processVisStr(inputData);
 
-  return canvas;
-}
-
-const writeCanvasNode = (canvas, filePath) => {
-  const buffer1 = canvas.toBuffer('image/png');
-  fs.writeFileSync(filePath, buffer1);
-}
-
-sv.createCanvas = createCanvasNode;
-
-sv.writeCanvas = writeCanvasNode;
-
-const processInputStr = (inputStr) => {
-  const inputArr = inputStr.split(/\n/).filter((x) => x);
-  for (let i = 0; i < inputArr.length; i++) {
-    sv.IOLoop(inputArr[i]);
-  }
-};
-
-const inputData = fs.readFileSync(filePath, {encoding: "utf-8"});
-
-processInputStr(inputData);
-
-sv.writeAll(outputBase);
+await sv.writeAll();
