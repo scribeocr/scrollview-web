@@ -47,7 +47,7 @@ export const colorsMapping = {
     "rgba(255, 0, 0, 255)": "RED",
     "rgba(255, 255, 0, 255)": "YELLOW",
     "rgba(0, 255, 0, 255)": "GREEN",
-    "rgba(0, 255, 255, 255)": "CYAN/TURQUOISE",
+    "rgba(0, 255, 255, 255)": "CYAN",
     "rgba(0, 0, 255, 255)": "BLUE",
     "rgba(255, 0, 255, 255)": "MAGENTA",
     "rgba(0, 128, 255, 255)": "AQUAMARINE",
@@ -57,38 +57,176 @@ export const colorsMapping = {
     "rgba(0, 0, 32, 255)": "MIDNIGHT_BLUE",
     "rgba(0, 0, 128, 255)": "NAVY_BLUE",
     "rgba(192, 192, 255, 255)": "SKY_BLUE",
-    "rgba(64, 64, 128, 255)": "SLATE_BLUE/DARK_SLATE_GREY",
+    "rgba(64, 64, 128, 255)": "SLATE_BLUE",
     "rgba(32, 32, 64, 255)": "STEEL_BLUE",
     "rgba(255, 128, 128, 255)": "CORAL",
     "rgba(128, 64, 0, 255)": "BROWN",
-    "rgba(128, 128, 0, 255)": "SANDY_BROWN/TAN/WHEAT",
+    // "rgba(128, 128, 0, 255)": "SANDY_BROWN", // Same RGBA as WHEAT and never used in Tesseract code.
     "rgba(192, 192, 0, 255)": "GOLD",
     "rgba(192, 192, 128, 255)": "GOLDENROD",
     "rgba(0, 64, 0, 255)": "DARK_GREEN",
     "rgba(32, 64, 0, 255)": "DARK_OLIVE_GREEN",
     "rgba(64, 128, 0, 255)": "FOREST_GREEN",
-    "rgba(128, 255, 0, 255)": "LIME_GREEN/GREEN_YELLOW",
+    "rgba(128, 255, 0, 255)": "LIME_GREEN",
     "rgba(192, 255, 192, 255)": "PALE_GREEN",
     "rgba(192, 255, 0, 255)": "YELLOW_GREEN",
     "rgba(192, 192, 192, 255)": "LIGHT_GREY",
-    // "rgba(64, 64, 128, 255)": "DARK_SLATE_GREY",
+    // "rgba(64, 64, 128, 255)": "DARK_SLATE_GREY", // Same RGBA as SLATE_BLUE and never used in Tesseract code.
     "rgba(64, 64, 64, 255)": "DIM_GREY",
     "rgba(128, 128, 128, 255)": "GREY",
     "rgba(64, 192, 0, 255)": "KHAKI",
-    "rgba(255, 0, 192, 255)": "MAROON/VIOLET_RED",
+    "rgba(255, 0, 192, 255)": "MAROON",
     "rgba(255, 128, 0, 255)": "ORANGE",
     "rgba(255, 128, 64, 255)": "ORCHID",
     "rgba(255, 192, 192, 255)": "PINK",
     "rgba(128, 0, 128, 255)": "PLUM",
     "rgba(255, 0, 64, 255)": "INDIAN_RED",
     "rgba(255, 64, 0, 255)": "ORANGE_RED",
-    // "rgba(255, 0, 192, 255)": "VIOLET_RED",
+    // "rgba(255, 0, 192, 255)": "VIOLET_RED", // Same RGBA as MAROON and never used in Tesseract code.
     "rgba(255, 192, 128, 255)": "SALMON",
-    // "rgba(128, 128, 0, 255)": "TAN",
-    // "rgba(0, 255, 255, 255)": "TURQUOISE",
+    // "rgba(128, 128, 0, 255)": "TAN", // Same RGBA as WHEAT and never used in Tesseract code.
+    // "rgba(0, 255, 255, 255)": "TURQUOISE", // Same RGBA as CYAN and never used in Tesseract code.
     "rgba(0, 128, 128, 255)": "DARK_TURQUOISE",
     "rgba(192, 0, 255, 255)": "VIOLET",
-    // "rgba(128, 128, 0, 255)": "WHEAT",
-    // "rgba(128, 255, 0, 255)": "GREEN_YELLOW"
+    "rgba(128, 128, 0, 255)": "WHEAT",
+    // "rgba(128, 255, 0, 255)": "GREEN_YELLOW" // Same RGBA as LIME_GREEN and never used in Tesseract code.
 };
 
+/**
+ * Looks up the `region_type` and `flow_type` that would result `BLOBNBOX::TextlineColor` returning a specific color.
+ * Used to create visualization color keys for blob bounding boxes, and bounding boxes of partitions up to but not including "InitialPartitions".
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertTextlineColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'BROWN':
+            return { region_type: 'BRT_HLINE' };
+
+        case 'DARK_GREEN':
+            return { region_type: 'BRT_VLINE' };
+
+        case 'RED':
+            return { region_type: 'BRT_RECTIMAGE' };
+
+        case 'ORANGE':
+            return { region_type: 'BRT_POLYIMAGE' };
+
+        case 'CYAN':
+            return { region_type: 'BRT_UNKNOWN', flow_type: 'BTFT_NONTEXT' };
+
+        case 'WHITE':
+            return { region_type: 'BRT_UNKNOWN', flow_type: 'Not BTFT_NONTEXT' };
+
+        case 'GREEN':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'BTFT_STRONG_CHAIN or BTFT_TEXT_ON_IMAGE' };
+
+        case 'LIME_GREEN':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'BTFT_CHAIN' };
+
+        case 'YELLOW':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'Other' };
+
+        case 'BLUE':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_STRONG_CHAIN' };
+
+        case 'LIGHT_BLUE':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_TEXT_ON_IMAGE' };
+
+        // This case is MEDIUM_BLUE in vanilla Tesseract, however was edited to AQUAMARINE to improve readability.
+        // MEDIUM_BLUE is very difficult to tell apart from BLUE.
+        case 'MEDIUM_BLUE':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_CHAIN' };
+
+        case 'AQUAMARINE':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_CHAIN' };
+
+
+
+        case 'WHEAT':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_LEADER' };
+
+        case 'PINK':
+            return { region_type: 'BRT_TEXT', flow_type: 'BTFT_NONTEXT' };
+
+        case 'MAGENTA':
+            return { region_type: 'BRT_TEXT', flow_type: 'Other' };
+
+        case 'GRAY':
+            return { region_type: 'Other', flow_type: 'Any' };
+
+        default:
+            return { region_type: 'Unknown (Report Bug)', flow_type: 'Unknown (Report Bug)' };
+    }
+}
+
+/**
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertPhotoMaskColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'WHITE':
+            return { type: 'Medium Blob' };
+        case 'DARK_GREEN':
+            return { type: 'Large Blob' };
+        case 'GOLDENROD':
+            return { type: 'Small Blob' };
+        case 'CORAL':
+            return { type: 'Noise Blob' };
+        case 'RED':
+            return { type: 'Deleted Blob' };
+        default:
+            return { type: 'Unknown (Report Bug)' };
+
+    }
+}
+
+/**
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertImageBlobsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'WHITE':
+            return { type: 'Medium Blob' };
+        case 'DARK_GREEN':
+            return { type: 'Large Blob' };
+        case 'GOLDENROD':
+            return { type: 'Small Blob' };
+        case 'CORAL':
+            return { type: 'Noise Blob' };
+        case 'RED':
+            return { type: 'Deleted Blob' };
+
+        case 'BROWN':
+            return { type: 'Medium Blob Interior' };
+        case 'YELLOW':
+            return { type: 'Small or Large Blob Interior' };
+        case 'BLUE':
+            return { type: 'Noise Blob Interior' };
+
+        default:
+            return { type: 'Unknown (Report Bug)' };
+
+    }
+}
+
+
+const boxColorLookup = {
+    "Photo Mask Blobs": invertPhotoMaskColor,
+    "Image blobs": invertImageBlobsColor,
+    "Initial text chains": invertTextlineColor,
+    "GoodTextline blobs": invertTextlineColor,
+    "Smoothed blobs": invertTextlineColor,
+    "With Images": invertTextlineColor,
+    "Rejected blobs": invertImageBlobsColor,
+}
+
+export const getBoxColorFunc = (name) => {
+    const nameNative = name.replace(/_\d+/, '');
+    return boxColorLookup[nameNative];
+}

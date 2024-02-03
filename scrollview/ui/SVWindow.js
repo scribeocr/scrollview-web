@@ -118,6 +118,7 @@ export class SVWindow {
 
     this.ctx.strokeStyle = this.currentPenColor; // Set the color of the line
     this.ctx.lineWidth = this.stroke; // Set the width of the line
+    this.penColors[this.currentPenColor] = true;
 
     this.ctx.stroke(); // Render the path
   }
@@ -149,6 +150,9 @@ export class SVWindow {
     // Set the stroke style (border color) and fill style (interior color)
     this.ctx.strokeStyle = this.currentPenColor;
     this.ctx.fillStyle = this.currentBrushColor;
+    // When windows are first created, there is an instruction to draw a grey rectangle around the entire canvas.
+    // This is not added to `this.penColors` as the color gray conveys no meaning in this context so should not be added to keys.
+    if (!(x1 === 0 && y1 === 0 && x2 === this.canvasSizeX && y2 === this.canvasSizeY)) this.penColors[this.currentPenColor] = true;
     // this.ctx.fillStyle = 'blue';
     // this.ctx.strokeStyle = 'green';
 
@@ -167,7 +171,6 @@ export class SVWindow {
   /** Set the pen color to an RGBA value */
   pen(red, green, blue, alpha = 255) {
     this.currentPenColor = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-    this.penColors[this.currentPenColor] = true;
   }
 
   /** Set the brush to an RGBA color */
@@ -220,6 +223,7 @@ export class SVWindow {
     this.ctx.strokeStyle = this.currentPenColor; // Assuming currentPenColor is defined
     this.ctx.lineWidth = this.stroke; // Assuming stroke is defined
     this.ctx.stroke();
+    this.penColors[this.currentPenColor] = true;
 
     ScrollView.polylineSize = 0;
   }
