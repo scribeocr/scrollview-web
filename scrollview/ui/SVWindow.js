@@ -44,14 +44,15 @@ export class SVWindow {
     this.currentPenColor = 'black';
     this.currentBrushColor = 'black';
     this.currentFont = 'normal 12px Times';
-    this.stroke = 1;
+    this.stroke = 2;
 
     this.createCanvas = createCanvas;
     this.writeCanvas = writeCanvas;
 
     // Keep track of all stroke colors so they can be listed to the user.
     // Tesseract uses many different (often similar) colors, so it can be otherwise difficult to determine which color is being used.
-    this.penColors = {};
+    this.penColorsRect = {};
+    this.penColorsLine = {};
 
     // Determine the initial size and zoom factor of the window.
     // If the window is too big, rescale it and zoom out.
@@ -118,7 +119,7 @@ export class SVWindow {
 
     this.ctx.strokeStyle = this.currentPenColor; // Set the color of the line
     this.ctx.lineWidth = this.stroke; // Set the width of the line
-    this.penColors[this.currentPenColor] = true;
+    this.penColorsLine[this.currentPenColor] = true;
 
     this.ctx.stroke(); // Render the path
   }
@@ -151,8 +152,8 @@ export class SVWindow {
     this.ctx.strokeStyle = this.currentPenColor;
     this.ctx.fillStyle = this.currentBrushColor;
     // When windows are first created, there is an instruction to draw a grey rectangle around the entire canvas.
-    // This is not added to `this.penColors` as the color gray conveys no meaning in this context so should not be added to keys.
-    if (!(x1 === 0 && y1 === 0 && x2 === this.canvasSizeX && y2 === this.canvasSizeY)) this.penColors[this.currentPenColor] = true;
+    // This is not added to `this.penColorsRect` as the color gray conveys no meaning in this context so should not be added to keys.
+    if (!(x1 === 0 && y1 === 0 && x2 === this.canvasSizeX && y2 === this.canvasSizeY)) this.penColorsRect[this.currentPenColor] = true;
     // this.ctx.fillStyle = 'blue';
     // this.ctx.strokeStyle = 'green';
 
@@ -223,7 +224,7 @@ export class SVWindow {
     this.ctx.strokeStyle = this.currentPenColor; // Assuming currentPenColor is defined
     this.ctx.lineWidth = this.stroke; // Assuming stroke is defined
     this.ctx.stroke();
-    this.penColors[this.currentPenColor] = true;
+    this.penColorsRect[this.currentPenColor] = true;
 
     ScrollView.polylineSize = 0;
   }

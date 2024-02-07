@@ -1,5 +1,5 @@
 import { ScrollViewBrowser } from "./src/ScrollViewBrowser.js";
-import { colorsMapping, getBoxColorFunc } from "./src/constants.js";
+import { colorsMapping, getBoxColorFunc, getLineColorFunc } from "./src/constants.js";
 
 const sv = new ScrollViewBrowser(addCanvasesToDocument);
 
@@ -136,7 +136,7 @@ function addCanvasesToDocument(args) {
     const context = canvas.getContext('2d');
     context.drawImage(offscreenCanvas, 0, 0);
 
-    const legendCanvas = drawColorLegend(key, this.penColors);
+    const legendCanvas = drawColorLegend(key, this.penColorsRect, this.penColorsLine);
 
     const div = document.createElement('div');
     div.appendChild(canvas);
@@ -147,12 +147,12 @@ function addCanvasesToDocument(args) {
 
 }
 
-function drawColorLegend(name, colors) {
+function drawColorLegend(name, colorsRect, colorsLine) {
 
     const boxColorFunc = getBoxColorFunc(name);
+    const lineColorFunc = getLineColorFunc(name);
 
-    if (!boxColorFunc) return;
-    if (!colors) return;
+    if (!(boxColorFunc && colorsRect) && !(lineColorFunc && colorsLine)) return;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -164,40 +164,81 @@ function drawColorLegend(name, colors) {
     const textPadding = 10; // Padding between box and text
     const lineHeight = boxHeight + padding; // Calculate line height for each entry
 
+    const elemsCt = (Object.keys(colorsRect).length || 0) * !!boxColorFunc + (Object.keys(colorsLine).length || 0) * !!lineColorFunc;
+
     canvas.width = 500;
-    canvas.height = lineHeight * Object.keys(colors).length + padding;
+    canvas.height = lineHeight * elemsCt + padding;
 
     // Set the background of the canvas to black
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    if (colorsRect && boxColorFunc) {
+        Object.keys(colorsRect).map((color) => {
 
-    Object.keys(colors).map((color) => {
+            const colorObj = boxColorFunc(color);
 
-        const colorObj = boxColorFunc(color);
+            let colorLabelArr = [];
+            for (const [key, value] of Object.entries(colorObj)) {
+                colorLabelArr.push(`${key}: ${value}`);
+            }
 
-        let colorLabelArr = [];
-        for (const [key, value] of Object.entries(colorObj)) {
-            colorLabelArr.push(`${key}: ${value}`);
-        }
+            // Add a stroke around the box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding, startY, boxWidth, boxHeight);
 
-        // Add a stroke around the box
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(padding, startY, boxWidth, boxHeight);
+            // Draw the text
+            ctx.fillStyle = 'white'; // Text color
+            ctx.textBaseline = 'middle'; // Align text vertically in the middle of the box
+            let offsetX = 0;
+            for (let i = 0; i < colorLabelArr.length; i++) {
+                ctx.fillText(colorLabelArr[i], padding + boxWidth + textPadding + offsetX, startY + boxHeight / 2);
+                offsetX += 200;
+            }
 
-        // Draw the text
-        ctx.fillStyle = 'white'; // Text color
-        ctx.textBaseline = 'middle'; // Align text vertically in the middle of the box
-        let offsetX = 0;
-        for (let i = 0; i < colorLabelArr.length; i++) {
-            ctx.fillText(colorLabelArr[i], padding + boxWidth + textPadding + offsetX, startY + boxHeight / 2);
-            offsetX += 200;
-        }
+            // Move startY for the next color box
+            startY += lineHeight;
+        });
 
-        // Move startY for the next color box
-        startY += lineHeight;
-    });
+    }
+
+    if (colorsLine && lineColorFunc) {
+
+        Object.keys(colorsLine).map((color) => {
+
+            const colorObj = lineColorFunc(color);
+
+            let colorLabelArr = [];
+            for (const [key, value] of Object.entries(colorObj)) {
+                colorLabelArr.push(`${key}: ${value}`);
+            }
+
+            // Add a stroke around the box
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.fillStyle = color;
+            // ctx.strokeRect(padding, startY, boxWidth, boxHeight);
+
+            ctx.beginPath();
+            ctx.roundRect(padding, startY + 7, boxWidth, 3, [40]);
+            ctx.stroke();
+            ctx.fill();
+
+            // Draw the text
+            ctx.fillStyle = 'white'; // Text color
+            ctx.textBaseline = 'middle'; // Align text vertically in the middle of the box
+            let offsetX = 0;
+            for (let i = 0; i < colorLabelArr.length; i++) {
+                ctx.fillText(colorLabelArr[i], padding + boxWidth + textPadding + offsetX, startY + boxHeight / 2);
+                offsetX += 200;
+            }
+
+            // Move startY for the next color box
+            startY += lineHeight;
+        });
+
+    }
 
     return canvas;
 
@@ -241,7 +282,11 @@ const recognize = (evt) => {
                 api.SetVariable('textord_tabfind_show_partitions', '1');
 
 
-                api.SetVariable('textord_debug_tabfind', '1');
+                // api.SetVariable('textord_debug_tabfind', '1');
+
+
+                api.SetVariable('textord_tabfind_find_tables', '0');
+                api.SetVariable('textord_noise_area_ratio', '1');
 
 
                 api.SetVariable('vis_file', '/visInstructions.txt');

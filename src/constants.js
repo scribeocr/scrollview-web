@@ -153,8 +153,64 @@ function invertTextlineColor(colorRGBA) {
         case 'MAGENTA':
             return { region_type: 'BRT_TEXT', flow_type: 'Other' };
 
-        case 'GRAY':
-            return { region_type: 'Other', flow_type: 'Any' };
+        case 'GREY':
+            return { region_type: 'BRT_NOISE' };
+
+        default:
+            return { region_type: 'Unknown (Report Bug)', flow_type: 'Unknown (Report Bug)' };
+    }
+}
+
+/**
+ * Looks up the region type and goodness that would result `DisplayGoodBlobs` using a specific color.
+ * The `DisplayGoodBlobs` does not set color directly, rather it sets the `flow` property depending on goodness if `flow` is not already set.
+ * `flow` is never already set when `DisplayGoodBlobs` is run, so in practice this means that certain `flow` values map to certain goodness values.
+ * 
+ * @param {string} colorRGBA 
+ */
+function invertDisplayGoodBlobsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'BROWN':
+            return { region_type: 'BRT_HLINE' };
+
+        case 'DARK_GREEN':
+            return { region_type: 'BRT_VLINE' };
+
+        case 'RED':
+            return { region_type: 'BRT_RECTIMAGE' };
+
+        case 'ORANGE':
+            return { region_type: 'BRT_POLYIMAGE' };
+
+        case 'WHITE':
+            return { region_type: 'BRT_UNKNOWN' };
+
+        case 'GREEN':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'Goodness > 1' };
+
+        case 'LIME_GREEN':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'Goodness = 1' };
+
+        case 'YELLOW':
+            return { region_type: 'BRT_VERT_TEXT', flow_type: 'Goodness = 0' };
+
+        case 'BLUE':
+            return { region_type: 'BRT_TEXT', flow_type: 'Goodness > 1' };
+
+        // This case is MEDIUM_BLUE in vanilla Tesseract, however was edited to AQUAMARINE to improve readability.
+        // MEDIUM_BLUE is very difficult to tell apart from BLUE.
+        case 'MEDIUM_BLUE':
+            return { region_type: 'BRT_TEXT', flow_type: 'Goodness = 1' };
+
+        case 'AQUAMARINE':
+            return { region_type: 'BRT_TEXT', flow_type: 'Goodness = 1' };
+
+        case 'MAGENTA':
+            return { region_type: 'BRT_TEXT', flow_type: 'Goodness = 0' };
+
+        case 'GREY':
+            return { region_type: 'BRT_NOISE' };
 
         default:
             return { region_type: 'Unknown (Report Bug)', flow_type: 'Unknown (Report Bug)' };
@@ -215,18 +271,161 @@ function invertImageBlobsColor(colorRGBA) {
     }
 }
 
+/**
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertPlotGradedBlobsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'YELLOW':
+            return { type: 'Definite vertical text.' };
+        case 'RED':
+            return { type: 'Outside textline, not definite vertical text.' };
+        case 'BLUE':
+            return { type: 'Inside textline, not definite vertical text.' };
+        default:
+            return { type: 'Unknown (Report Bug)' };
+
+    }
+
+}
+
+// WIP 
+/**
+ * @param {string} colorRGBA 
+ */
+function invertDisplayDiacriticsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'GREEN':
+            return { type: 'Diacritic.' };
+        case 'RED':
+            return { type: 'Outside textline, not definite vertical text.' };
+        case 'BLUE':
+            return { type: 'Inside textline, not definite vertical text.' };
+        default:
+            return { type: 'Unknown (Report Bug)' };
+
+    }
+
+}
+
+const colorToPolyBlockType = {
+    "WHITE": "PT_UNKNOWN",
+    "BLUE": "PT_FLOWING_TEXT",
+    "CYAN": "PT_HEADING_TEXT",
+    "MEDIUM_BLUE": "PT_PULLOUT_TEXT",
+    "AQUAMARINE": "PT_EQUATION",
+    "SKY_BLUE": "PT_INLINE_EQUATION",
+    "MAGENTA": "PT_TABLE",
+    "GREEN": "PT_VERTICAL_TEXT",
+    "LIGHT_BLUE": "PT_CAPTION_TEXT",
+    "RED": "PT_FLOWING_IMAGE",
+    "YELLOW": "PT_HEADING_IMAGE",
+    "ORANGE": "PT_PULLOUT_IMAGE",
+    "BROWN": "PT_HORZ_LINE",
+    "DARK_GREEN": "PT_VERT_LINE",
+    "GREY": "PT_NOISE"
+};
+
+/**
+ * @param {string} colorRGBA 
+ */
+function invertPolyBlockColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    const type = colorToPolyBlockType[color.toUpperCase()];
+    return type ? { type } : { type: "Unknown (Report Bug)" };
+}
+
+
+/**
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertTabStopColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'LIME_GREEN':
+            return { type: 'TA_LEFT_ALIGNED' };
+        case 'DARK_GREEN':
+            return { type: 'TA_LEFT_RAGGED' };
+        case 'PINK':
+            return { type: 'TA_RIGHT_ALIGNED' };
+        case 'CORAL':
+            return { type: 'TA_RIGHT_RAGGED' };
+        case 'WHITE':
+            return { type: 'TA_CENTER_JUSTIFIED or TA_SEPARATOR' };
+        case 'GREY':
+            return { type: 'Extended Min/Max' };
+        default:
+            return { type: 'Unknown (Report Bug)' };
+
+    }
+}
+
+/**
+ * @param {string} colorRGBA 
+ * @returns 
+ */
+function invertDisplayTabsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'BLUE':
+            return { type: 'Left tabtype: TT_MAYBE_ALIGNED' };
+        case 'YELLOW':
+            return { type: 'Left tabtype: TT_MAYBE_RAGGED' };
+        case 'GREEN':
+            return { type: 'Left tabtype: TT_CONFIRMED' };
+        // GREY appears in both this function and `invertTabStopColor`, which are both used on the same canvas, and we cannot tell the difference.
+        // Using other definition for the legend as those lines are much more common and prominent. 
+        // case 'GREY':
+        //     return { type: 'Left or Right tabtype: TT_DELETED or TT_VLINE' };
+
+        case 'MAGENTA':
+            return { type: 'Right tabtype: MAGENTA' };
+        case 'ORANGE':
+            return { type: 'Right tabtype: ORANGE' };
+        case 'RED':
+            return { type: 'Right tabtype: RED' };
+        // Every function that calls `DisplayTabs` also displays tab stops on the same canvas. The inverse is not true.
+        default:
+            return invertTabStopColor(colorRGBA);
+
+    }
+}
+
+
+const lineColorLookup = {
+    "InitialTabs": invertDisplayTabsColor,
+    "FinalTabs": invertDisplayTabsColor,
+    "InitialPartitions": invertTabStopColor,
+    "Partitions": invertTabStopColor,
+}
+
 
 const boxColorLookup = {
     "Photo Mask Blobs": invertPhotoMaskColor,
     "Image blobs": invertImageBlobsColor,
+    "Initial textline Blobs": invertPlotGradedBlobsColor,
+    "LeaderNeighbours": invertDisplayGoodBlobsColor,
+    "InitialStrokewidths": invertDisplayGoodBlobsColor,
+    "ImprovedStrokewidths": invertDisplayGoodBlobsColor,
     "Initial text chains": invertTextlineColor,
     "GoodTextline blobs": invertTextlineColor,
     "Smoothed blobs": invertTextlineColor,
     "With Images": invertTextlineColor,
     "Rejected blobs": invertImageBlobsColor,
+    "InitialPartitions": invertPolyBlockColor,
 }
 
 export const getBoxColorFunc = (name) => {
     const nameNative = name.replace(/_\d+/, '');
     return boxColorLookup[nameNative];
 }
+
+export const getLineColorFunc = (name) => {
+    const nameNative = name.replace(/_\d+/, '');
+    return lineColorLookup[nameNative];
+}
+
