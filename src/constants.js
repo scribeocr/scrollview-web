@@ -408,7 +408,7 @@ const boxColorLookup = {
     "Photo Mask Blobs": invertPhotoMaskColor,
     "Image blobs": invertImageBlobsColor,
     "Initial textline Blobs": invertPlotGradedBlobsColor,
-    "LeaderNeighbours": invertDisplayGoodBlobsColor,
+    // LeaderNeighbours plots everything in white, so does not need a color legend.
     "InitialStrokewidths": invertDisplayGoodBlobsColor,
     "ImprovedStrokewidths": invertDisplayGoodBlobsColor,
     "Initial text chains": invertTextlineColor,

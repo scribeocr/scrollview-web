@@ -284,7 +284,7 @@ const recognize = (evt) => {
 
                 // api.SetVariable('textord_debug_tabfind', '1');
 
-
+                api.SetVariable('show_threshold_images', '1');
                 api.SetVariable('textord_tabfind_find_tables', '0');
                 api.SetVariable('textord_noise_area_ratio', '1');
 
