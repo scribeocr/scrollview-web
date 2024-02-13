@@ -92,6 +92,14 @@ export const colorsMapping = {
     // "rgba(128, 255, 0, 255)": "GREEN_YELLOW" // Same RGBA as LIME_GREEN and never used in Tesseract code.
 };
 
+export function getViewColor(color) {
+    if (color === 'rgba(255, 255, 255, 255)' && globalThis.lightTheme) {
+        return "rgba(0, 0, 0, 255)";
+    }
+    return color;
+}
+
+
 /**
  * Looks up the `region_type` and `flow_type` that would result `BLOBNBOX::TextlineColor` returning a specific color.
  * Used to create visualization color keys for blob bounding boxes, and bounding boxes of partitions up to but not including "InitialPartitions".
@@ -383,11 +391,11 @@ function invertDisplayTabsColor(colorRGBA) {
         //     return { type: 'Left or Right tabtype: TT_DELETED or TT_VLINE' };
 
         case 'MAGENTA':
-            return { type: 'Right tabtype: MAGENTA' };
+            return { type: 'Right tabtype: TT_MAYBE_ALIGNED' };
         case 'ORANGE':
-            return { type: 'Right tabtype: ORANGE' };
+            return { type: 'Right tabtype: TT_MAYBE_RAGGED' };
         case 'RED':
-            return { type: 'Right tabtype: RED' };
+            return { type: 'Right tabtype: TT_CONFIRMED' };
         // Every function that calls `DisplayTabs` also displays tab stops on the same canvas. The inverse is not true.
         default:
             return invertTabStopColor(colorRGBA);

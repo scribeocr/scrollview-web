@@ -2,6 +2,7 @@
 /* eslint-disable no-param-reassign */
 
 import { ScrollView } from '../ScrollView.js';
+import { getViewColor } from "../../src/constants.js";
 
 if (typeof process !== 'undefined') {
   const { createCanvas, registerFont } = await import('canvas');
@@ -20,6 +21,8 @@ export class SVWindow {
    * @param {number} sizeY The height of the window.
    * @param {number} canvasSizeX The canvas width of the window.
    * @param {number} canvasSizeY The canvas height of the window.
+   * @param {*} createCanvas 
+   * @param {*} writeCanvas 
    */
   constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, createCanvas, writeCanvas) {
     // Provide defaults for sizes.
@@ -42,7 +45,7 @@ export class SVWindow {
     this.name = name;
     this.hash = hash;
     this.currentPenColor = 'black';
-    this.currentBrushColor = 'black';
+    this.currentBrushColor = 'rgb(0, 0, 0, 0)';
     this.currentFont = 'normal 12px Times';
     this.stroke = 2;
 
@@ -84,20 +87,7 @@ export class SVWindow {
     // document.body.appendChild(this.canvas);
     this.ctx = /** @type {CanvasRenderingContext2D} */ (this.canvas.getContext('2d'));
 
-    this.ctx.fillStyle = 'black';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
-
-  //   constructor(height, width) {
-  //     this.height = height;
-  //     this.width = width;
-  //     this.canvas = document.createElement('canvas');
-  //     this.canvas.width = this.width;
-  //     this.canvas.height = this.height;
-  //     // Add the canvas to the document's body
-  //     document.body.appendChild(this.canvas);
-  //     this.ctx = /** @type {CanvasRenderingContext2D} */ (this.canvas.getContext('2d'));
-  //   }
 
   /**
      * Draw a line from (x1, y1) to (x2, y2) using the current pen color and stroke.
@@ -117,7 +107,7 @@ export class SVWindow {
 
     // this.ctx.strokeStyle = 'red'; // Set the color of the line
 
-    this.ctx.strokeStyle = this.currentPenColor; // Set the color of the line
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor); // Set the color of the line
     this.ctx.lineWidth = this.stroke; // Set the width of the line
     this.penColorsLine[this.currentPenColor] = true;
 
@@ -149,8 +139,8 @@ export class SVWindow {
     // and have been set before this function is called.
 
     // Set the stroke style (border color) and fill style (interior color)
-    this.ctx.strokeStyle = this.currentPenColor;
-    this.ctx.fillStyle = this.currentBrushColor;
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor);
+    this.ctx.fillStyle = getViewColor(this.currentBrushColor);
     // When windows are first created, there is an instruction to draw a grey rectangle around the entire canvas.
     // This is not added to `this.penColorsRect` as the color gray conveys no meaning in this context so should not be added to keys.
     if (!(x1 === 0 && y1 === 0 && x2 === this.canvasSizeX && y2 === this.canvasSizeY)) this.penColorsRect[this.currentPenColor] = true;
@@ -221,8 +211,8 @@ export class SVWindow {
     }
 
     // Set the stroke style and apply it
-    this.ctx.strokeStyle = this.currentPenColor; // Assuming currentPenColor is defined
-    this.ctx.lineWidth = this.stroke; // Assuming stroke is defined
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor);
+    this.ctx.lineWidth = this.stroke;
     this.ctx.stroke();
     this.penColorsRect[this.currentPenColor] = true;
 
