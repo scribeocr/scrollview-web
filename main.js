@@ -3,8 +3,11 @@ import { colorsMapping, getBoxColorFunc, getLineColorFunc, getViewColor } from "
 
 const mainColElem = /**@type {HTMLDivElement} */ (document.getElementById('mainCol'));
 const infoColElem = /**@type {HTMLDivElement} */ (document.getElementById('infoCol'));
+const sidebarAreaElem = /**@type {HTMLDivElement} */ (document.getElementById('sidebarArea'));
 const sidebarScrollAreaElem = /**@type {HTMLDivElement} */ (document.getElementById('sidebarScrollArea'));
 const infoBtnElem = /**@type {HTMLButtonElement} */ (document.getElementById('infoBtn'));
+const infoBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('infoBtnMobile'));
+const viewBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('viewBtnMobile'));
 
 globalThis.lightTheme = true;
 
@@ -25,19 +28,59 @@ const disabledDefaultArr = [
     "VerticalLines_2",
 ];
 
-infoBtnElem.addEventListener('click', () => {
+viewBtnMobileElem.addEventListener('click', () => {
+    if (sidebarAreaElem.classList.contains('d-none')) {
+        // mainColElem.setAttribute('style', 'position:relative;overflow-y:scroll;height:95vh;top:5vh')
+        mainColElem.classList.add('d-none');
+        enableViewCol();
+        disableInfoCol();
+    } else {
+        mainColElem.classList.remove('d-none');
+        disableViewCol();
+    }
+});
+
+function enableViewCol() {
+    sidebarAreaElem.classList.remove('d-none');
+    viewBtnMobileElem.classList.add('btn-secondary');
+    viewBtnMobileElem.classList.remove('btn-light');
+}
+
+function disableViewCol() {
+    sidebarAreaElem.classList.add('d-none');
+    viewBtnMobileElem.classList.remove('btn-secondary');
+    viewBtnMobileElem.classList.add('btn-light');
+}
+
+function disableInfoCol() {
+    infoColElem.classList.add('d-none');
+    infoBtnElem.classList.remove('btn-secondary');
+    infoBtnElem.classList.add('btn-light');
+    infoBtnMobileElem.classList.remove('btn-secondary');
+    infoBtnMobileElem.classList.add('btn-light');
+}
+
+function enableInfoCol() {
+    infoColElem.classList.remove('d-none');
+    infoBtnElem.classList.add('btn-secondary');
+    infoBtnElem.classList.remove('btn-light');
+    infoBtnMobileElem.classList.add('btn-secondary');
+    infoBtnMobileElem.classList.remove('btn-light');
+}
+
+function toggleInfoBtn() {
     if (infoColElem.classList.contains('d-none')) {
-        infoBtnElem.classList.add('btn-secondary');
-        infoBtnElem.classList.remove('btn-light');
-        infoColElem.classList.remove('d-none');
+        enableInfoCol();
+        disableViewCol();
         mainColElem.classList.add('d-none');
     } else {
-        infoColElem.classList.add('d-none');
-        infoBtnElem.classList.remove('btn-secondary');
-        infoBtnElem.classList.add('btn-light');
+        disableInfoCol();
         mainColElem.classList.remove('d-none');
     }
-})
+}
+
+infoBtnElem.addEventListener('click', toggleInfoBtn);
+infoBtnMobileElem.addEventListener('click', toggleInfoBtn);
 
 const sv = new ScrollViewBrowser(addCanvasesToDocument);
 
@@ -71,8 +114,6 @@ function createUnorderedListFromObject(obj) {
     return ul;
 
 }
-
-
 const brtDesc = {
     "BRT_NOISE": "Neither text nor image.",
     "BRT_HLINE": "Horizontal separator line.",
