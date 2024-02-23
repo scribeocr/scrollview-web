@@ -92,8 +92,8 @@ export const colorsMapping = {
     // "rgba(128, 255, 0, 255)": "GREEN_YELLOW" // Same RGBA as LIME_GREEN and never used in Tesseract code.
 };
 
-export function getViewColor(color) {
-    if (color === 'rgba(255, 255, 255, 255)' && globalThis.lightTheme) {
+export function getViewColor(color, lightTheme) {
+    if (color === 'rgba(255, 255, 255, 255)' && lightTheme) {
         return "rgba(0, 0, 0, 255)";
     }
     return color;

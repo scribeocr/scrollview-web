@@ -22,9 +22,9 @@ export class SVWindow {
    * @param {number} canvasSizeX The canvas width of the window.
    * @param {number} canvasSizeY The canvas height of the window.
    * @param {*} createCanvas 
-   * @param {*} writeCanvas 
+   * @param {boolean} [lightTheme=false] Assume white background instead of black background.
    */
-  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, createCanvas, writeCanvas) {
+  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, createCanvas, lightTheme = false) {
     // Provide defaults for sizes.
     if (sizeX <= 0) sizeX = canvasSizeX;
     if (sizeY <= 0) sizeY = canvasSizeY;
@@ -50,7 +50,6 @@ export class SVWindow {
     this.stroke = 2;
 
     this.createCanvas = createCanvas;
-    this.writeCanvas = writeCanvas;
 
     // Keep track of all stroke colors so they can be listed to the user.
     // Tesseract uses many different (often similar) colors, so it can be otherwise difficult to determine which color is being used.
@@ -87,6 +86,8 @@ export class SVWindow {
     // document.body.appendChild(this.canvas);
     this.ctx = /** @type {CanvasRenderingContext2D} */ (this.canvas.getContext('2d'));
 
+    this.lightTheme = lightTheme;
+
   }
 
   /**
@@ -107,7 +108,7 @@ export class SVWindow {
 
     // this.ctx.strokeStyle = 'red'; // Set the color of the line
 
-    this.ctx.strokeStyle = getViewColor(this.currentPenColor); // Set the color of the line
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor, this.lightTheme); // Set the color of the line
     this.ctx.lineWidth = this.stroke; // Set the width of the line
     this.penColorsLine[this.currentPenColor] = true;
 
@@ -139,8 +140,8 @@ export class SVWindow {
     // and have been set before this function is called.
 
     // Set the stroke style (border color) and fill style (interior color)
-    this.ctx.strokeStyle = getViewColor(this.currentPenColor);
-    this.ctx.fillStyle = getViewColor(this.currentBrushColor);
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor, this.lightTheme);
+    this.ctx.fillStyle = getViewColor(this.currentBrushColor, this.lightTheme);
     // When windows are first created, there is an instruction to draw a grey rectangle around the entire canvas.
     // This is not added to `this.penColorsRect` as the color gray conveys no meaning in this context so should not be added to keys.
     if (!(x1 === 0 && y1 === 0 && x2 === this.canvasSizeX && y2 === this.canvasSizeY)) this.penColorsRect[this.currentPenColor] = true;
@@ -211,7 +212,7 @@ export class SVWindow {
     }
 
     // Set the stroke style and apply it
-    this.ctx.strokeStyle = getViewColor(this.currentPenColor);
+    this.ctx.strokeStyle = getViewColor(this.currentPenColor, this.lightTheme);
     this.ctx.lineWidth = this.stroke;
     this.ctx.stroke();
     this.penColorsRect[this.currentPenColor] = true;

@@ -9,9 +9,6 @@ const infoBtnElem = /**@type {HTMLButtonElement} */ (document.getElementById('in
 const infoBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('infoBtnMobile'));
 const viewBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('viewBtnMobile'));
 
-globalThis.lightTheme = true;
-
-
 const descObj = {
     "Grey_1": "Grayscale input image.",
     "Binary_1": "Binarized input image.",
@@ -82,7 +79,7 @@ function toggleInfoBtn() {
 infoBtnElem.addEventListener('click', toggleInfoBtn);
 infoBtnMobileElem.addEventListener('click', toggleInfoBtn);
 
-const sv = new ScrollViewBrowser(addCanvasesToDocument);
+const sv = new ScrollViewBrowser(true);
 
 const readFromBlobOrFile = (blob) => (
     new Promise((resolve, reject) => {
@@ -345,10 +342,10 @@ function createSidebarEntry(title, description) {
 
 
 
-function addCanvasesToDocument(args) {
+function addCanvasesToDocument(key, value) {
 
-    const key = args.name;
-    const offscreenCanvas = args.canvas;
+    const offscreenCanvas = value.canvas;
+    const offscreenCanvasLegend = value.canvasLegend;
 
     // Create a label for the canvas
     const cardTitle = document.createElement('h4');
@@ -377,8 +374,6 @@ function addCanvasesToDocument(args) {
 
     ctx.drawImage(offscreenCanvas, 0, 0);
 
-    const legendCanvas = drawColorLegend(key, this.penColorsRect, this.penColorsLine);
-
     const div = document.createElement('div');
 
     const cardElem = document.createElement('div');
@@ -404,7 +399,16 @@ function addCanvasesToDocument(args) {
     const cardBody = document.createElement('div');
     cardBody.setAttribute('class', 'card-body');
 
-    if (legendCanvas) cardElem.appendChild(legendCanvas);
+    if (offscreenCanvasLegend) {
+        const canvas = document.createElement('canvas');
+        const ctx = /**@type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
+
+        canvas.width = offscreenCanvasLegend.width;
+        canvas.height = offscreenCanvasLegend.height;
+
+        ctx.drawImage(offscreenCanvasLegend, 0, 0);
+        cardElem.appendChild(canvas);
+    }
 
     // Append the canvas to the document
     div.appendChild(cardElem);
@@ -413,104 +417,6 @@ function addCanvasesToDocument(args) {
     createSidebarEntry(key);
 
 }
-
-function drawColorLegend(name, colorsRect, colorsLine) {
-
-    const boxColorFunc = getBoxColorFunc(name);
-    const lineColorFunc = getLineColorFunc(name);
-
-    if (!(boxColorFunc && colorsRect) && !(lineColorFunc && colorsLine)) return;
-
-    const canvas = document.createElement('canvas');
-    const ctx = /**@type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
-
-    let startY = 10; // Starting Y position for the first color
-    const boxHeight = 20; // Height of the color box
-    const boxWidth = 40; // Width of the color box
-    const padding = 10; // Padding between boxes
-    const textPadding = 10; // Padding between box and text
-    const lineHeight = boxHeight + padding; // Calculate line height for each entry
-
-    const elemsCt = (Object.keys(colorsRect).length || 0) * !!boxColorFunc + (Object.keys(colorsLine).length || 0) * !!lineColorFunc;
-
-    canvas.width = 500;
-    canvas.height = lineHeight * elemsCt + padding;
-
-    // Set the background of the canvas to black
-    ctx.fillStyle = globalThis.lightTheme ? 'white' : 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    if (colorsRect && boxColorFunc) {
-        Object.keys(colorsRect).map((color) => {
-
-            const colorObj = boxColorFunc(color);
-
-            let colorLabelArr = [];
-            for (const [key, value] of Object.entries(colorObj)) {
-                colorLabelArr.push(`${key}: ${value}`);
-            }
-
-            // Add a stroke around the box
-            ctx.strokeStyle = getViewColor(color);
-            ctx.lineWidth = 2;
-            ctx.strokeRect(padding, startY, boxWidth, boxHeight);
-
-            // Draw the text
-            ctx.fillStyle = globalThis.lightTheme ? 'black' : 'white';
-            ctx.textBaseline = 'middle'; // Align text vertically in the middle of the box
-            let offsetX = 0;
-            for (let i = 0; i < colorLabelArr.length; i++) {
-                ctx.fillText(colorLabelArr[i], padding + boxWidth + textPadding + offsetX, startY + boxHeight / 2);
-                offsetX += 200;
-            }
-
-            // Move startY for the next color box
-            startY += lineHeight;
-        });
-
-    }
-
-    if (colorsLine && lineColorFunc) {
-
-        Object.keys(colorsLine).map((color) => {
-
-            const colorObj = lineColorFunc(color);
-
-            let colorLabelArr = [];
-            for (const [key, value] of Object.entries(colorObj)) {
-                colorLabelArr.push(`${key}: ${value}`);
-            }
-
-            // Add a stroke around the box
-            ctx.strokeStyle = getViewColor(color);
-            ctx.lineWidth = 2;
-            ctx.fillStyle = getViewColor(color);
-            // ctx.strokeRect(padding, startY, boxWidth, boxHeight);
-
-            ctx.beginPath();
-            ctx.roundRect(padding, startY + 7, boxWidth, 3, [40]);
-            ctx.stroke();
-            ctx.fill();
-
-            // Draw the text
-            ctx.fillStyle = globalThis.lightTheme ? 'black' : 'white';
-            ctx.textBaseline = 'middle';
-            let offsetX = 0;
-            for (let i = 0; i < colorLabelArr.length; i++) {
-                ctx.fillText(colorLabelArr[i], padding + boxWidth + textPadding + offsetX, startY + boxHeight / 2);
-                offsetX += 200;
-            }
-
-            // Move startY for the next color box
-            startY += lineHeight;
-        });
-
-    }
-
-    return canvas;
-
-}
-
 
 
 const recognize = (evt) => {
@@ -577,7 +483,10 @@ const recognize = (evt) => {
 
                 await sv.processVisStr(visStr);
 
-                await sv.writeAll();
+                const visObj = sv.getAll(true);
+                for (const [key, value] of Object.entries(visObj)) {
+                    addCanvasesToDocument(key, value);
+                }
 
                 api.End();
                 TessModule.destroy(api);

@@ -16,8 +16,8 @@ const createCanvasBrowser = () => {
 // }
 
 export class ScrollViewBrowser extends ScrollView {
-    constructor(writeCanvasBrowser) {
-        super(createCanvasBrowser, writeCanvasBrowser);
+    constructor(lightTheme) {
+        super(createCanvasBrowser, lightTheme);
         this.processQueue = (x) => processQueue.bind(this)(x);
         this.IOLoopWrapper = (x) => IOLoopWrapper.bind(this)(x);
         this.processVisStr = (x) => processVisStr.bind(this)(x);

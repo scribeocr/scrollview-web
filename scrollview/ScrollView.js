@@ -1,5 +1,7 @@
 import { SVWindow } from './ui/SVWindow.js';
 import { SVImageHandler } from "./ui/SVImageHandler.js";
+import { drawColorLegend } from '../src/common.js';
+import { getViewColor } from '../src/constants.js';
 
 /**
  * There should never be more than 1 `ScrollView` object, as the use of `static` properties creates issues.
@@ -9,9 +11,9 @@ import { SVImageHandler } from "./ui/SVImageHandler.js";
  */
 export class ScrollView {
 
-  constructor(createCanvas, writeCanvas) {
+  constructor(createCanvas, lightTheme = false) {
     this.createCanvas = createCanvas;
-    this.writeCanvas = writeCanvas;
+    this.lightTheme = lightTheme;
   }
 
 
@@ -22,18 +24,23 @@ export class ScrollView {
   // When multiple windows are created with the same name, a number is appended to make the file names unique.
   nameCount = {};
 
-  async writeAll(key) {
-    if (!this.windows) {
-      console.log("No windows currently exist.")
-      return;
-    }
+  /**
+   * @typedef {Object} DebugVis
+   * @property {*} canvas - Canvas with visualization.
+   * @property {*} canvasLegend - Canvas with legend, if requested.
+   */
 
-    // const outputObj = {};
+  /**
+   * 
+   * @param {boolean} [createLegend=false] - Whether to create a legend explaining the meaning of each color.
+   * @returns 
+   */
+  getAll(createLegend = false) {
+
+    /**@type {Object<string, DebugVis>} */
+    const outputObj = {};
 
     for (const [key, value] of Object.entries(this.windows)) {
-      if (!this.windows[key].writeCanvas) {
-        throw new Error("writeCanvas method must be defined prior to running processInput.");
-      }
 
       const name = this.windows[key].name;
 
@@ -43,14 +50,21 @@ export class ScrollView {
 
       const nameFull = `${name}_${String(this.nameCount[name])}`;
 
-      await this.windows[key].writeCanvas({ "canvas": this.windows[key].canvas, "name": nameFull });
+      let canvasLegend;
+      let nonemptyLegend = false;
+      if (createLegend) {
+        canvasLegend = this.createCanvas();
+        nonemptyLegend = drawColorLegend(canvasLegend, nameFull, this.windows[key].penColorsRect, this.windows[key].penColorsLine, this.lightTheme);
+      }
 
-      // await this.windows[key].writeCanvas(this.windows[key].canvas, pathFull);
+      outputObj[nameFull] = {
+        canvas: this.windows[key].canvas,
+        canvasLegend: createLegend && nonemptyLegend ? canvasLegend : null,
+      };
 
-      // outputObj[nameFull] = output;
     }
 
-    // return outputObj;
+    return outputObj;
   }
 
   /**
@@ -321,7 +335,7 @@ export class ScrollView {
           intList[0], intList[1],
           intList[2], intList[3],
           intList[4], intList[5],
-          intList[6], this.createCanvas, this.writeCanvas);
+          intList[6], this.createCanvas, this.lightTheme);
       }
     }
   }
