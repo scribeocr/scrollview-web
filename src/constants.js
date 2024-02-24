@@ -281,9 +281,37 @@ function invertImageBlobsColor(colorRGBA) {
 
 /**
  * @param {string} colorRGBA 
- * @returns 
+ * Corresponds to `TextlineProjection::PlotGradedBlobs` in Tesseract.
  */
 function invertPlotGradedBlobsColor(colorRGBA) {
+    const color = colorsMapping[colorRGBA];
+    switch (color) {
+        case 'WHITE':
+            return { type: 'Medium blob.' };
+        case 'BROWN':
+            return { type: 'Medium blob (child).' };
+        case 'CORAL':
+            return { type: 'Noise blob.' };
+        case 'BLUE':
+            return { type: 'Noise blob (child).' };
+        case 'GOLDENROD':
+            return { type: 'Small blob.' };
+        case 'YELLOW':
+            return { type: 'Small blob (child).' };
+        case 'DARK_GREEN':
+            return { type: 'Large blob.' };
+        case 'YELLOW':
+            return { type: 'Large blob (child).' };
+        default:
+            return { type: 'Unknown (Report Bug)' };
+    }
+}
+
+/**
+ * @param {string} colorRGBA 
+ * Corresponds to `TextlineProjection::PlotGradedBlobs` in Tesseract.
+ */
+function invertTextlineProjectionPlotGradedBlobsColor(colorRGBA) {
     const color = colorsMapping[colorRGBA];
     switch (color) {
         case 'YELLOW':
@@ -413,9 +441,10 @@ const lineColorLookup = {
 
 
 const boxColorLookup = {
+    "Filtered Input Blobs": invertPlotGradedBlobsColor,
     "Photo Mask Blobs": invertPhotoMaskColor,
     "Image blobs": invertImageBlobsColor,
-    "Initial textline Blobs": invertPlotGradedBlobsColor,
+    "Initial textline Blobs": invertTextlineProjectionPlotGradedBlobsColor,
     // LeaderNeighbours plots everything in white, so does not need a color legend.
     "InitialStrokewidths": invertDisplayGoodBlobsColor,
     "ImprovedStrokewidths": invertDisplayGoodBlobsColor,
