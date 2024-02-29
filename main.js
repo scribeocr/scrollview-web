@@ -8,6 +8,7 @@ const sidebarScrollAreaElem = /**@type {HTMLDivElement} */ (document.getElementB
 const infoBtnElem = /**@type {HTMLButtonElement} */ (document.getElementById('infoBtn'));
 const infoBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('infoBtnMobile'));
 const viewBtnMobileElem = /**@type {HTMLButtonElement} */ (document.getElementById('viewBtnMobile'));
+const runRecognizeCheckboxElem = /**@type {HTMLInputElement} */ (document.getElementById('runRecognizeCheckbox'));
 
 const descObj = {
     "Grey_1": "Grayscale input image.",
@@ -420,6 +421,9 @@ function addCanvasesToDocument(key, value) {
 
 
 const recognize = (evt) => {
+    const inputFile = evt.target.files[0];
+    if (!inputFile) return;
+
     TesseractCore().then((TessModule) => {
         let time1 = Date.now();
         const api = new TessModule.TessBaseAPI();
@@ -432,11 +436,10 @@ const recognize = (evt) => {
             })
             .then(async () => {
 
-                const messageDiv = document.getElementById('message');
+                const messageDivElem = /**@type {HTMLDivElement} */ (document.getElementById('message'));
 
                 api.Init(null, lang);
 
-                const inputFile = evt.target.files[0];
                 const fileBuf = new Uint8Array(await readFromBlobOrFile(inputFile));
 
                 const blob = new Blob([fileBuf], { type: 'image/png' });
@@ -471,7 +474,11 @@ const recognize = (evt) => {
 
                 api.SetVariable('vis_file', '/visInstructions.txt');
 
-                messageDiv.innerHTML = api.GetUTF8Text();
+                if (runRecognizeCheckboxElem.checked) {
+                    messageDivElem.innerHTML = api.GetUTF8Text();
+                } else {
+                    api.AnalyseLayout();
+                }
 
                 let time2 = Date.now();
 
