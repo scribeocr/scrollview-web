@@ -32,7 +32,7 @@ export async function IOLoopWrapper(...args) {
  * @param {string} inputStr 
  */
 export async function processVisStr(inputStr) {
-    const inputArr = inputStr.split(/\n/).filter((x) => x);
+    const inputArr = inputStr.split(/[\r\n]+/).filter((x) => x);
     for (let i = 0; i < inputArr.length; i++) {
         await this.IOLoopWrapper(inputArr[i]);
     }

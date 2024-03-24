@@ -82,7 +82,7 @@ infoBtnMobileElem.addEventListener('click', toggleInfoBtn);
 
 const sv = new ScrollViewBrowser(true);
 
-const readFromBlobOrFile = (blob) => (
+const readFileToArrayBuffer = (blob) => (
     new Promise((resolve, reject) => {
         const fileReader = new FileReader();
         fileReader.onload = () => {
@@ -94,6 +94,20 @@ const readFromBlobOrFile = (blob) => (
         fileReader.readAsArrayBuffer(blob);
     })
 );
+
+const readFileToString = (blob) => (
+    new Promise((resolve, reject) => {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+            resolve(fileReader.result);
+        };
+        fileReader.onerror = ({ target: { error: { code } } }) => {
+            reject(Error(`File could not be read! Code=${code}`));
+        };
+        fileReader.readAsText(blob);
+    })
+);
+
 
 function createUnorderedListFromObject(obj) {
     // Create an unordered list element
@@ -371,7 +385,7 @@ function addCanvasesToDocument(key, value) {
     const ctx = /**@type {CanvasRenderingContext2D} */ (canvas.getContext('2d'));
     const ctxBackground = /**@type {CanvasRenderingContext2D} */ (canvasBackground.getContext('2d'));
 
-    ctxBackground.drawImage(globalThis.imageBitmap, 0, 0);
+    if (globalThis.imageBitmap) ctxBackground.drawImage(globalThis.imageBitmap, 0, 0);
 
     ctx.drawImage(offscreenCanvas, 0, 0);
 
@@ -440,7 +454,7 @@ const recognize = (evt) => {
 
                 api.Init(null, lang);
 
-                const fileBuf = new Uint8Array(await readFromBlobOrFile(inputFile));
+                const fileBuf = new Uint8Array(await readFileToArrayBuffer(inputFile));
 
                 const blob = new Blob([fileBuf], { type: 'image/png' });
 
@@ -502,5 +516,21 @@ const recognize = (evt) => {
     });
 }
 
-const elm = document.getElementById('uploader');
-elm.addEventListener('change', recognize);
+const uploadImageInputElem = /**@type {HTMLInputElement} */ (document.getElementById('uploadImageInput'));
+uploadImageInputElem.addEventListener('change', recognize);
+
+const uploadInstructionsInputElem = /**@type {HTMLInputElement} */ (document.getElementById('uploadInstructionsInput'));
+uploadInstructionsInputElem.addEventListener('change', async (e) => {
+    const inputFile = e.target.files[0];
+    if (!inputFile) return;
+
+    const visStr = await readFileToString(inputFile);
+
+    await sv.processVisStr(visStr);
+
+    const visObj = sv.getAll(true);
+    for (const [key, value] of Object.entries(visObj)) {
+        addCanvasesToDocument(key, value);
+    }
+
+});

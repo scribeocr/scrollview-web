@@ -209,12 +209,20 @@
 
             <div class="col align-items-stretch flex-shrink-0 bg-white p-4 sv-content-col"
                 style="overflow-y:scroll;position:relative" id="mainCol">
-                <div class="mb-2">
-                    <input type="file" id="uploader">
-                </div>
 
-                <label><input class="form-check-input" type="checkbox" id="runRecognizeCheckbox"> Run
-                    Recognition</label>
+                <div>
+                    <input type="file" class="position-absolute invisible" id="uploadImageInput" multiple="">
+                    <label class="btn btn-secondary mb-3" for="uploadImageInput" id="uploadImageInputLabel"
+                        style="min-width:8rem">Upload Image</label>
+                    <label><input class="form-check-input" type="checkbox" id="runRecognizeCheckbox"> Run
+                        Recognition</label>
+                </div>
+                <div>
+                    <input type="file" class="position-absolute invisible" id="uploadInstructionsInput" multiple="">
+                    <label class="btn btn-secondary mb-3" for="uploadInstructionsInput"
+                        id="uploadInstructionsInputLabel" style="min-width:8rem">Upload Visualization
+                        Instructions</label>
+                </div>
 
                 <div>
                     <textarea id="message" style="resize:auto"></textarea>

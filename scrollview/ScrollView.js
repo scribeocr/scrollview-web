@@ -327,6 +327,7 @@ export class ScrollView {
             break;
           default:
             // Handle unrecognized function call
+            console.log(`Unrecognized function call: ${func}`);
             break;
         }
       } else if (idStrs[1].startsWith('= luajava.newInstance')) {
