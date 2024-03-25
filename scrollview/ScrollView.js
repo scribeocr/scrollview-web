@@ -1,7 +1,29 @@
 import { SVWindow } from './ui/SVWindow.js';
 import { SVImageHandler } from "./ui/SVImageHandler.js";
-import { drawColorLegend } from '../src/common.js';
+import { drawColorLegend, getRandomAlphanum } from '../src/common.js';
 import { getViewColor } from '../src/constants.js';
+
+async function createCanvasBrowser() {
+
+  const canvas = new OffscreenCanvas(200, 200);
+
+  return canvas;
+}
+
+async function createCanvasNode() {
+
+  const { isMainThread } = await import('worker_threads');
+  const { createCanvas } = await import('canvas');
+
+  // The Node.js canvas package does not currently support worker threads
+  // https://github.com/Automattic/node-canvas/issues/1394
+  if (!isMainThread) throw new Error('node-canvas is not currently supported on worker threads.');
+
+  const canvas = createCanvas(200, 200);
+
+  return canvas;
+}
+
 
 /**
  * There should never be more than 1 `ScrollView` object, as the use of `static` properties creates issues.
@@ -11,9 +33,10 @@ import { getViewColor } from '../src/constants.js';
  */
 export class ScrollView {
 
-  constructor(createCanvas, lightTheme = false) {
-    this.createCanvas = createCanvas;
+  constructor(lightTheme = false) {
+    this.createCanvas = typeof process === 'undefined' ? createCanvasBrowser : createCanvasNode;
     this.lightTheme = lightTheme;
+    this.svId = getRandomAlphanum(10);
   }
 
 
@@ -35,7 +58,7 @@ export class ScrollView {
    * @param {boolean} [createLegend=false] - Whether to create a legend explaining the meaning of each color.
    * @returns 
    */
-  getAll(createLegend = false) {
+  async getAll(createLegend = false) {
 
     /**@type {Object<string, DebugVis>} */
     const outputObj = {};
@@ -53,7 +76,7 @@ export class ScrollView {
       let canvasLegend;
       let nonemptyLegend = false;
       if (createLegend) {
-        canvasLegend = this.createCanvas();
+        canvasLegend = await this.createCanvas();
         nonemptyLegend = drawColorLegend(canvasLegend, nameFull, this.windows[key].penColorsRect, this.windows[key].penColorsLine, this.lightTheme);
       }
 
@@ -136,25 +159,13 @@ export class ScrollView {
     return idStrs;
   }
 
-  // Using static properties in the `ScrollView` class to hold data used by `SVWindow` is the wrong way to implement,
-  // however keeping this for now because this is how the Java code for ScrollView works.
-  /** @type {Array<number>} */
-  static polylineXCoords = [];
-
-  /** @type {Array<number>} */
-  static polylineYCoords = [];
-
-  static polylineSize = 0;
-
-  static polylineScanned = 0;
-
   imageWaiting = false;
 
   imageXPos = 0;
 
   imageYPos = 0;
 
-  imageWindowID = 0;
+  windowID = 0;
 
 
   /**
@@ -164,23 +175,23 @@ export class ScrollView {
   async IOLoop(inputLine) {
     if (!inputLine) return;
 
-    if (ScrollView.polylineSize > ScrollView.polylineScanned) {
+    if (this.windows[this.windowID] && this.windows[this.windowID].polylineSize > this.windows[this.windowID].polylineScanned) {
       // We are processing a polyline.
       // Read pairs of coordinates separated by commas.
       let first = true;
       for (const coordStr of inputLine.replace(/[,\s]+$/, '').split(',')) {
         const coord = Number.parseInt(coordStr);
         if (first) {
-          ScrollView.polylineXCoords[ScrollView.polylineScanned] = coord;
+          this.windows[this.windowID].polylineXCoords[this.windows[this.windowID].polylineScanned] = coord;
         } else {
-          ScrollView.polylineYCoords[ScrollView.polylineScanned++] = coord;
+          this.windows[this.windowID].polylineYCoords[this.windows[this.windowID].polylineScanned++] = coord;
         }
         first = !first;
       }
       console.assert(first);
     } else if (this.imageWaiting) {
       const image = await SVImageHandler.readImage(inputLine);
-      this.windows[this.imageWindowID].drawImageInternal(image, this.imageXPos, this.imageYPos);
+      this.windows[this.windowID].drawImageInternal(image, this.imageXPos, this.imageYPos);
       this.imageWaiting = false;
     } else {
       // Process this normally.
@@ -206,7 +217,7 @@ export class ScrollView {
       // Parse the command without the leading 'w'
       const noWLine = inputLine.substring(1);
       const idStrs = this.constructor.splitJava(noWLine, /[ :]/, 2);
-      const windowID = parseInt(idStrs[0], 10);
+      this.windowID = parseInt(idStrs[0], 10);
 
       // Find the parentheses to isolate arguments
       const start = inputLine.indexOf('(');
@@ -230,100 +241,99 @@ export class ScrollView {
         // Assuming this.windows is an array of objects with methods as defined in Java
         switch (func) {
           case 'drawLine':
-            this.windows[windowID].drawLine(intList[0], intList[1], intList[2], intList[3]);
+            this.windows[this.windowID].drawLine(intList[0], intList[1], intList[2], intList[3]);
             break;
           case 'createPolyline':
-            this.windows[windowID].createPolyline(intList[0]);
+            this.windows[this.windowID].createPolyline(intList[0]);
             break;
           case 'drawPolyline':
-            this.windows[windowID].drawPolyline();
+            this.windows[this.windowID].drawPolyline();
             break;
           case 'drawRectangle':
-            this.windows[windowID].drawRectangle(intList[0], intList[1], intList[2], intList[3]);
+            this.windows[this.windowID].drawRectangle(intList[0], intList[1], intList[2], intList[3]);
             break;
           case 'setVisible':
-            this.windows[windowID].setVisible(boolList[0]);
+            this.windows[this.windowID].setVisible(boolList[0]);
             break;
           case 'setAlwaysOnTop':
-            this.windows[windowID].setAlwaysOnTop(boolList[0]);
+            this.windows[this.windowID].setAlwaysOnTop(boolList[0]);
             break;
           case 'addMessage':
-            this.windows[windowID].addMessage(stringList[0]);
+            this.windows[this.windowID].addMessage(stringList[0]);
             break;
           case 'addMessageBox':
-            this.windows[windowID].addMessageBox();
+            this.windows[this.windowID].addMessageBox();
             break;
           case 'clear':
-            this.windows[windowID].clear();
+            this.windows[this.windowID].clear();
             break;
           case 'setStrokeWidth':
-            this.windows[windowID].setStrokeWidth(floatList[0]);
+            this.windows[this.windowID].setStrokeWidth(floatList[0]);
             break;
           case 'drawEllipse':
-            this.windows[windowID].drawEllipse(intList[0], intList[1], intList[2], intList[3]);
+            this.windows[this.windowID].drawEllipse(intList[0], intList[1], intList[2], intList[3]);
             break;
           case 'pen':
             if (intList.length === 4) {
-              this.windows[windowID].pen(intList[0], intList[1], intList[2], intList[3]);
+              this.windows[this.windowID].pen(intList[0], intList[1], intList[2], intList[3]);
             } else {
-              this.windows[windowID].pen(intList[0], intList[1], intList[2]);
+              this.windows[this.windowID].pen(intList[0], intList[1], intList[2]);
             }
             break;
           case 'brush':
             if (intList.length === 4) {
-              this.windows[windowID].brush(intList[0], intList[1], intList[2], intList[3]);
+              this.windows[this.windowID].brush(intList[0], intList[1], intList[2], intList[3]);
             } else {
-              this.windows[windowID].brush(intList[0], intList[1], intList[2]);
+              this.windows[this.windowID].brush(intList[0], intList[1], intList[2]);
             }
             break;
           case 'textAttributes':
-            this.windows[windowID].textAttributes(stringList[0], intList[0], boolList[0], boolList[1], boolList[2]);
+            this.windows[this.windowID].textAttributes(stringList[0], intList[0], boolList[0], boolList[1], boolList[2]);
             break;
           case 'drawText':
-            this.windows[windowID].drawText(intList[0], intList[1], stringList[0]);
+            this.windows[this.windowID].drawText(intList[0], intList[1], stringList[0]);
             break;
           case 'addMenuBarItem':
             if (boolList.length > 0) {
-              this.windows[windowID].addMenuBarItem(stringList[0], stringList[1], intList[0], boolList[0]);
+              this.windows[this.windowID].addMenuBarItem(stringList[0], stringList[1], intList[0], boolList[0]);
             } else if (intList.length > 0) {
-              this.windows[windowID].addMenuBarItem(stringList[0], stringList[1], intList[0]);
+              this.windows[this.windowID].addMenuBarItem(stringList[0], stringList[1], intList[0]);
             } else {
-              this.windows[windowID].addMenuBarItem(stringList[0], stringList[1]);
+              this.windows[this.windowID].addMenuBarItem(stringList[0], stringList[1]);
             }
             break;
           case 'addPopupMenuItem':
             if (stringList.length === 4) {
-              this.windows[windowID].addPopupMenuItem(stringList[0], stringList[1], intList[0], stringList[2], stringList[3]);
+              this.windows[this.windowID].addPopupMenuItem(stringList[0], stringList[1], intList[0], stringList[2], stringList[3]);
             } else {
-              this.windows[windowID].addPopupMenuItem(stringList[0], stringList[1]);
+              this.windows[this.windowID].addPopupMenuItem(stringList[0], stringList[1]);
             }
             break;
           case 'update':
-            this.windows[windowID].update();
+            this.windows[this.windowID].update();
             break;
           case 'showInputDialog':
-            this.windows[windowID].showInputDialog(stringList[0]);
+            this.windows[this.windowID].showInputDialog(stringList[0]);
             break;
           case 'showYesNoDialog':
-            this.windows[windowID].showYesNoDialog(stringList[0]);
+            this.windows[this.windowID].showYesNoDialog(stringList[0]);
             break;
           case 'zoomRectangle':
-            this.windows[windowID].zoomRectangle(intList[0], intList[1], intList[2], intList[3]);
+            this.windows[this.windowID].zoomRectangle(intList[0], intList[1], intList[2], intList[3]);
             break;
           case 'readImage':
             this.imageWaiting = true;
-            this.imageWindowID = windowID;
             this.imageXPos = intList[0];
             this.imageYPos = intList[1];
             break;
           case 'drawImage':
-            this.windows[windowID].drawImage();
+            this.windows[this.windowID].drawImage();
             // Assuming PImage is adapted to JavaScript
             // const image = new PImage(stringList[0]);
-            // this.windows[windowID].drawImage(image, intList[0], intList[1]);
+            // this.windows[this.windowID].drawImage(image, intList[0], intList[1]);
             break;
           case 'destroy':
-            this.windows[windowID].destroy();
+            this.windows[this.windowID].destroy();
             break;
           default:
             // Handle unrecognized function call
@@ -332,12 +342,52 @@ export class ScrollView {
         }
       } else if (idStrs[1].startsWith('= luajava.newInstance')) {
         // No colon. Check for create window.
-        this.windows[windowID] = new SVWindow(stringList[1],
+        this.windows[this.windowID] = new SVWindow(stringList[1],
           intList[0], intList[1],
           intList[2], intList[3],
           intList[4], intList[5],
-          intList[6], this.createCanvas, this.lightTheme);
+          intList[6], await this.createCanvas(), this.lightTheme);
       }
     }
   }
+
+
+  queue = [];
+  isProcessing = false;
+
+  async processQueue() {
+    if (this.isProcessing) return;
+    this.isProcessing = true;
+
+    while (this.queue.length > 0) {
+      const { args, resolve } = this.queue.shift();
+      try {
+        const result = await this.IOLoop(...args);
+        resolve(result);
+      } catch (error) {
+        resolve(Promise.reject(error));
+      }
+    }
+
+    this.isProcessing = false;
+  }
+
+  async IOLoopWrapper(...args) {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ args, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  /**
+   * 
+   * @param {string} inputStr 
+   */
+  async processVisStr(inputStr) {
+    const inputArr = inputStr.split(/[\r\n]+/).filter((x) => x);
+    for (let i = 0; i < inputArr.length; i++) {
+      await this.IOLoopWrapper(inputArr[i]);
+    }
+  };
+
 }

@@ -1,4 +1,4 @@
-import { ScrollViewBrowser } from "./src/ScrollViewBrowser.js";
+import { ScrollView } from "./scrollview/ScrollView.js";
 import { colorsMapping, getBoxColorFunc, getLineColorFunc, getViewColor } from "./src/constants.js";
 
 const mainColElem = /**@type {HTMLDivElement} */ (document.getElementById('mainCol'));
@@ -80,7 +80,7 @@ function toggleInfoBtn() {
 infoBtnElem.addEventListener('click', toggleInfoBtn);
 infoBtnMobileElem.addEventListener('click', toggleInfoBtn);
 
-const sv = new ScrollViewBrowser(true);
+const sv = new ScrollView(true);
 
 const readFileToArrayBuffer = (blob) => (
     new Promise((resolve, reject) => {
@@ -528,7 +528,7 @@ uploadInstructionsInputElem.addEventListener('change', async (e) => {
 
     await sv.processVisStr(visStr);
 
-    const visObj = sv.getAll(true);
+    const visObj = await sv.getAll(true);
     for (const [key, value] of Object.entries(visObj)) {
         addCanvasesToDocument(key, value);
     }

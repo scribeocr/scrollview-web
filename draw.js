@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { ScrollViewNode, writeCanvasNodeAll } from './src/ScrollViewNode.js';
+import { ScrollView } from './scrollview/ScrollView.js';
+import { writeCanvasNodeAll } from './src/ScrollViewNode.js';
 
 const filePath = process.argv[2];
 const outputDir = process.argv[3];
@@ -11,12 +12,12 @@ if (!filePath) {
   process.exit(1);
 }
 
-const sv = new ScrollViewNode();
+const sv = new ScrollView();
 
 const inputData = fs.readFileSync(filePath, { encoding: "utf-8" });
 
 await sv.processVisStr(inputData);
 
-const visObj = sv.getAll(false);
+const visObj = await sv.getAll(false);
 
 writeCanvasNodeAll(visObj, fileBase);

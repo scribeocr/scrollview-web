@@ -1,12 +1,7 @@
 // Disabling eslint rules that would increase differences between Java/JavaScript versions.
 /* eslint-disable no-param-reassign */
 
-import { ScrollView } from '../ScrollView.js';
 import { getViewColor } from "../../src/constants.js";
-
-if (typeof process !== 'undefined') {
-  const { createCanvas, registerFont } = await import('canvas');
-}
 
 export class SVWindow {
   /**
@@ -21,10 +16,10 @@ export class SVWindow {
    * @param {number} sizeY The height of the window.
    * @param {number} canvasSizeX The canvas width of the window.
    * @param {number} canvasSizeY The canvas height of the window.
-   * @param {*} createCanvas 
+   * @param {*} canvas 
    * @param {boolean} [lightTheme=false] Assume white background instead of black background.
    */
-  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, createCanvas, lightTheme = false) {
+  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, canvas, lightTheme = false) {
     // Provide defaults for sizes.
     if (sizeX <= 0) sizeX = canvasSizeX;
     if (sizeY <= 0) sizeY = canvasSizeY;
@@ -49,12 +44,21 @@ export class SVWindow {
     this.currentFont = 'normal 12px Times';
     this.stroke = 2;
 
-    this.createCanvas = createCanvas;
-
     // Keep track of all stroke colors so they can be listed to the user.
     // Tesseract uses many different (often similar) colors, so it can be otherwise difficult to determine which color is being used.
     this.penColorsRect = {};
     this.penColorsLine = {};
+
+    /** @type {Array<number>} */
+    this.polylineXCoords = [];
+
+    /** @type {Array<number>} */
+    this.polylineYCoords = [];
+
+    this.polylineSize = 0;
+
+    this.polylineScanned = 0;
+
 
     // Determine the initial size and zoom factor of the window.
     // If the window is too big, rescale it and zoom out.
@@ -79,7 +83,7 @@ export class SVWindow {
     this.canvasSizeY = canvasSizeY;
 
     // this.canvas = document.createElement('canvas');
-    this.canvas = this.createCanvas();
+    this.canvas = canvas;
     this.canvas.width = this.canvasSizeX;
     this.canvas.height = this.canvasSizeY;
     // Add the canvas to the document's body
@@ -189,26 +193,26 @@ export class SVWindow {
  * @param {number} length - Number of coordinate pairs.
  */
   createPolyline(length) {
-    ScrollView.polylineXCoords = new Array(length);
-    ScrollView.polylineYCoords = new Array(length);
-    ScrollView.polylineSize = length;
-    ScrollView.polylineScanned = 0;
+    this.polylineXCoords = new Array(length);
+    this.polylineYCoords = new Array(length);
+    this.polylineSize = length;
+    this.polylineScanned = 0;
   }
 
   /**
  * Draw the now complete polyline.
  */
   drawPolyline() {
-    const numCoords = ScrollView.polylineXCoords.length;
+    const numCoords = this.polylineXCoords.length;
     if (numCoords < 2) {
       return;
     }
 
     this.ctx.beginPath();
-    this.ctx.moveTo(ScrollView.polylineXCoords[0], ScrollView.polylineYCoords[0]);
+    this.ctx.moveTo(this.polylineXCoords[0], this.polylineYCoords[0]);
 
     for (let p = 1; p < numCoords; ++p) {
-      this.ctx.lineTo(ScrollView.polylineXCoords[p], ScrollView.polylineYCoords[p]);
+      this.ctx.lineTo(this.polylineXCoords[p], this.polylineYCoords[p]);
     }
 
     // Set the stroke style and apply it
@@ -217,7 +221,7 @@ export class SVWindow {
     this.ctx.stroke();
     this.penColorsRect[this.currentPenColor] = true;
 
-    ScrollView.polylineSize = 0;
+    this.polylineSize = 0;
   }
 
   /**

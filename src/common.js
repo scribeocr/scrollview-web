@@ -1,44 +1,5 @@
 import { getBoxColorFunc, getLineColorFunc, getViewColor } from './constants.js';
 
-let queue = [];
-let isProcessing = false;
-
-export async function processQueue() {
-    if (isProcessing) return;
-    isProcessing = true;
-
-    while (queue.length > 0) {
-        const { args, resolve } = queue.shift();
-        try {
-            const result = await this.IOLoop(...args);
-            resolve(result);
-        } catch (error) {
-            resolve(Promise.reject(error));
-        }
-    }
-
-    isProcessing = false;
-}
-
-export async function IOLoopWrapper(...args) {
-    return new Promise((resolve, reject) => {
-        queue.push({ args, resolve, reject });
-        this.processQueue();
-    });
-}
-
-/**
- * 
- * @param {string} inputStr 
- */
-export async function processVisStr(inputStr) {
-    const inputArr = inputStr.split(/[\r\n]+/).filter((x) => x);
-    for (let i = 0; i < inputArr.length; i++) {
-        await this.IOLoopWrapper(inputArr[i]);
-    }
-};
-
-
 /**
  * 
  * @param {*} canvas 
@@ -148,3 +109,38 @@ export function drawColorLegend(canvas, name, colorsRect, colorsLine, lightTheme
 
 }
 
+/**
+ * Generates a random integer.
+ *
+ * @param {number} min - The minimum value (inclusive).
+ * @param {number} max - The maximum value (exclusive).
+ *
+ * Taken from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
+ */
+export function getRandomInt(min, max) {
+    const minI = Math.ceil(min);
+    const maxI = Math.floor(max);
+    return Math.floor(Math.random() * (maxI - minI) + minI); // The maximum is exclusive and the minimum is inclusive
+}
+
+
+/**
+ * Generates a random alphanumeric string of a specified length.
+ *
+ * @param {number} num - The length of the alphanumeric string to generate.
+ */
+export function getRandomAlphanum(num) {
+    const outArr = new Array(num);
+    for (let i = 0; i < num; i++) {
+        let intI = getRandomInt(1, 62);
+        if (intI <= 10) {
+            intI += 47;
+        } else if (intI <= 36) {
+            intI = intI - 10 + 64;
+        } else {
+            intI = intI - 36 + 96;
+        }
+        outArr[i] = String.fromCharCode(intI);
+    }
+    return outArr.join('');
+}
