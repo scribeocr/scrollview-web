@@ -504,7 +504,7 @@ const recognize = (evt) => {
 
                 await sv.processVisStr(visStr);
 
-                const visObj = sv.getAll(true);
+                const visObj = await sv.getAll(true);
                 for (const [key, value] of Object.entries(visObj)) {
                     addCanvasesToDocument(key, value);
                 }
