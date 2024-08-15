@@ -1,5 +1,5 @@
-import { ScrollView } from "./scrollview/ScrollView.js";
-import { colorsMapping, getBoxColorFunc, getLineColorFunc, getViewColor } from "./src/constants.js";
+import { ScrollView } from "../scrollview/ScrollView.js";
+import { colorsMapping, getBoxColorFunc, getLineColorFunc, getViewColor } from "../src/constants.js";
 
 const mainColElem = /**@type {HTMLDivElement} */ (document.getElementById('mainCol'));
 const infoColElem = /**@type {HTMLDivElement} */ (document.getElementById('infoCol'));
@@ -443,7 +443,7 @@ const recognize = (evt) => {
         const api = new TessModule.TessBaseAPI();
         const lang = 'eng';
 
-        fetch(`./tess/${lang}.traineddata`)
+        fetch(`./app/tess/${lang}.traineddata`)
             .then(resp => resp.arrayBuffer())
             .then(buf => {
                 TessModule.FS.writeFile(`${lang}.traineddata`, new Uint8Array(buf));
