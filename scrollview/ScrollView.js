@@ -2,25 +2,6 @@ import { drawColorLegend, getRandomAlphanum } from '../src/common.js';
 import { SVImageHandler } from './ui/SVImageHandler.js';
 import { SVWindow } from './ui/SVWindow.js';
 
-async function createCanvasBrowser() {
-  const canvas = new OffscreenCanvas(200, 200);
-
-  return canvas;
-}
-
-async function createCanvasNode() {
-  const { isMainThread } = await import('worker_threads');
-  const { createCanvas } = await import('canvas');
-
-  // The Node.js canvas package does not currently support worker threads
-  // https://github.com/Automattic/node-canvas/issues/1394
-  if (!isMainThread) throw new Error('node-canvas is not currently supported on worker threads.');
-
-  const canvas = createCanvas(200, 200);
-
-  return canvas;
-}
-
 /**
  * There should never be more than 1 `ScrollView` object, as the use of `static` properties creates issues.
  * This is inherited from how the Java ScrollView code is written.
@@ -29,7 +10,17 @@ async function createCanvasNode() {
  */
 export class ScrollView {
   constructor(lightTheme = false) {
-    this.createCanvas = typeof process === 'undefined' ? createCanvasBrowser : createCanvasNode;
+    // This syntax is weird, however defining these functions separately before the ternary causes issues with Webpack.
+    this.createCanvas = typeof process === 'undefined' ? () => (new OffscreenCanvas(200, 200)) : async () => {
+      const { isMainThread } = await import('worker_threads');
+      const { createCanvas } = await import('canvas');
+
+      // The Node.js canvas package does not currently support worker threads
+      // https://github.com/Automattic/node-canvas/issues/1394
+      if (!isMainThread) throw new Error('node-canvas is not currently supported on worker threads.');
+
+      return createCanvas(200, 200);
+    };
     this.lightTheme = lightTheme;
     this.svId = getRandomAlphanum(10);
   }
