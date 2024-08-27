@@ -3,7 +3,6 @@
 const browserMode = typeof process === 'undefined';
 
 export class SVImageHandler {
-
   /**
    * @param {string} imgStr
    */
@@ -21,12 +20,10 @@ export class SVImageHandler {
   * @param {string} imgStr
   */
   static imageStrToBuffer(imgStr) {
-
     const imageBuffer = Buffer.from(imgStr, 'base64');
 
     return imageBuffer;
   }
-
 
   /**
    * Handles various image formats, always returns a ImageBitmap.
@@ -47,6 +44,5 @@ export class SVImageHandler {
     const imgBuffer = this.imageStrToBuffer(img);
     const imgBit = await loadImage(imgBuffer);
     return imgBit;
-
   }
 }

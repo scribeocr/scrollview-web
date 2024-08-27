@@ -1,17 +1,14 @@
-import { SVWindow } from './ui/SVWindow.js';
-import { SVImageHandler } from "./ui/SVImageHandler.js";
 import { drawColorLegend, getRandomAlphanum } from '../src/common.js';
-import { getViewColor } from '../src/constants.js';
+import { SVImageHandler } from './ui/SVImageHandler.js';
+import { SVWindow } from './ui/SVWindow.js';
 
 async function createCanvasBrowser() {
-
   const canvas = new OffscreenCanvas(200, 200);
 
   return canvas;
 }
 
 async function createCanvasNode() {
-
   const { isMainThread } = await import('worker_threads');
   const { createCanvas } = await import('canvas');
 
@@ -24,7 +21,6 @@ async function createCanvasNode() {
   return canvas;
 }
 
-
 /**
  * There should never be more than 1 `ScrollView` object, as the use of `static` properties creates issues.
  * This is inherited from how the Java ScrollView code is written.
@@ -32,13 +28,11 @@ async function createCanvasNode() {
  * as this only impacts the polyLine drawing code.
  */
 export class ScrollView {
-
   constructor(lightTheme = false) {
     this.createCanvas = typeof process === 'undefined' ? createCanvasBrowser : createCanvasNode;
     this.lightTheme = lightTheme;
     this.svId = getRandomAlphanum(10);
   }
-
 
   /** @type {Object.<string, SVWindow>} */
   windows = {};
@@ -54,17 +48,15 @@ export class ScrollView {
    */
 
   /**
-   * 
+   *
    * @param {boolean} [createLegend=false] - Whether to create a legend explaining the meaning of each color.
-   * @returns 
+   * @returns
    */
   async getAll(createLegend = false) {
-
-    /**@type {Object<string, DebugVis>} */
+    /** @type {Object<string, DebugVis>} */
     const outputObj = {};
 
     for (const [key, value] of Object.entries(this.windows)) {
-
       const name = this.windows[key].name;
 
       if (this.nameCount[name] === undefined) this.nameCount[name] = 0;
@@ -84,7 +76,6 @@ export class ScrollView {
         canvas: this.windows[key].canvas,
         canvasLegend: createLegend && nonemptyLegend ? canvasLegend : null,
       };
-
     }
 
     return outputObj;
@@ -167,7 +158,6 @@ export class ScrollView {
 
   windowID = 0;
 
-
   /**
    *
    * @param {string} inputLine
@@ -209,7 +199,7 @@ export class ScrollView {
     }
 
     if (!this.createCanvas) {
-      throw new Error("createCanvas method must be defined prior to running processInput.")
+      throw new Error('createCanvas method must be defined prior to running processInput.');
     }
 
     // Check if the command starts with 'w', indicating a window operation
@@ -351,8 +341,8 @@ export class ScrollView {
     }
   }
 
-
   queue = [];
+
   isProcessing = false;
 
   async processQueue() {
@@ -380,14 +370,13 @@ export class ScrollView {
   }
 
   /**
-   * 
-   * @param {string} inputStr 
+   *
+   * @param {string} inputStr
    */
   async processVisStr(inputStr) {
     const inputArr = inputStr.split(/[\r\n]+/).filter((x) => x);
     for (let i = 0; i < inputArr.length; i++) {
       await this.IOLoopWrapper(inputArr[i]);
     }
-  };
-
+  }
 }

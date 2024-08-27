@@ -1,7 +1,7 @@
 // Disabling eslint rules that would increase differences between Java/JavaScript versions.
 /* eslint-disable no-param-reassign */
 
-import { getViewColor } from "../../src/constants.js";
+import { getViewColor } from '../../src/constants.js';
 
 export class SVWindow {
   /**
@@ -16,7 +16,7 @@ export class SVWindow {
    * @param {number} sizeY The height of the window.
    * @param {number} canvasSizeX The canvas width of the window.
    * @param {number} canvasSizeY The canvas height of the window.
-   * @param {*} canvas 
+   * @param {*} canvas
    * @param {boolean} [lightTheme=false] Assume white background instead of black background.
    */
   constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, canvas, lightTheme = false) {
@@ -59,7 +59,6 @@ export class SVWindow {
 
     this.polylineScanned = 0;
 
-
     // Determine the initial size and zoom factor of the window.
     // If the window is too big, rescale it and zoom out.
     //  shrinkfactor = 1;
@@ -91,7 +90,6 @@ export class SVWindow {
     this.ctx = /** @type {CanvasRenderingContext2D} */ (this.canvas.getContext('2d'));
 
     this.lightTheme = lightTheme;
-
   }
 
   /**
@@ -246,7 +244,6 @@ export class SVWindow {
    * @param {boolean} underlined - Whether the font is underlined (currently not supported).
    */
   textAttributes(font, pixelSize, bold, italic, underlined) {
-
     let fontStyle = '';
     if (italic) {
       fontStyle += 'italic ';
@@ -257,7 +254,6 @@ export class SVWindow {
 
     // Combine the font properties into a CSS font string
     this.currentFont = `${fontStyle} ${pixelSize}px ${font}`;
-
   }
 
   setVisible(...args) {
@@ -303,7 +299,7 @@ export class SVWindow {
 
   update(...args) {
     // Not printing warning for `update` as this is not implemented by design.
-    // The `update` function updates the UI in the Java application; this happens automatically in this implementation. 
+    // The `update` function updates the UI in the Java application; this happens automatically in this implementation.
   }
 
   showInputDialog(...args) {
@@ -323,9 +319,9 @@ export class SVWindow {
 
   /**
    * Draw the image with the given name at (x,y).
-   * @param {ImageBitmap} img 
-   * @param {number} xPos 
-   * @param {number} yPos 
+   * @param {ImageBitmap} img
+   * @param {number} xPos
+   * @param {number} yPos
    */
   drawImageInternal(img, xPos, yPos) {
     this.ctx.drawImage(img, xPos, yPos);
