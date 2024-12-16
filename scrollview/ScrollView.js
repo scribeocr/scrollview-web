@@ -65,7 +65,7 @@ export class ScrollView {
       let canvasLegend;
       let nonemptyLegend = false;
       if (createLegend) {
-        canvasLegend = this.createCanvas();
+        canvasLegend = this.createCanvas(200, 200);
         nonemptyLegend = drawColorLegend(canvasLegend, nameFull, this.windows[key].penColorsRect, this.windows[key].penColorsLine, this.lightTheme);
       }
 
