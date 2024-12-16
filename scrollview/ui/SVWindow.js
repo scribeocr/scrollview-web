@@ -91,12 +91,12 @@ export class SVWindow {
   }
 
   /**
-     * Draw a line from (x1, y1) to (x2, y2) using the current pen color and stroke.
-     * @param {number} x1 - The x-coordinate of the start point of the line.
-     * @param {number} y1 - The y-coordinate of the start point of the line.
-     * @param {number} x2 - The x-coordinate of the end point of the line.
-     * @param {number} y2 - The y-coordinate of the end point of the line.
-     */
+   * Draw a line from (x1, y1) to (x2, y2) using the current pen color and stroke.
+   * @param {number} x1 - The x-coordinate of the start point of the line.
+   * @param {number} y1 - The y-coordinate of the start point of the line.
+   * @param {number} x2 - The x-coordinate of the end point of the line.
+   * @param {number} y2 - The y-coordinate of the end point of the line.
+   */
   drawLine(x1, y1, x2, y2) {
     // Assuming currentPenColor and stroke are globally accessible
     // and have been set before this function is called.
@@ -116,13 +116,13 @@ export class SVWindow {
   }
 
   /**
-     * Draw a rectangle given the two points (x1, y1) and (x2, y2) using the current
-     * stroke, pen color for the border, and the brush to fill the interior.
-     * @param {number} x1 - The x-coordinate of the first point.
-     * @param {number} y1 - The y-coordinate of the first point.
-     * @param {number} x2 - The x-coordinate of the opposite point.
-     * @param {number} y2 - The y-coordinate of the opposite point.
-     */
+   * Draw a rectangle given the two points (x1, y1) and (x2, y2) using the current
+   * stroke, pen color for the border, and the brush to fill the interior.
+   * @param {number} x1 - The x-coordinate of the first point.
+   * @param {number} y1 - The y-coordinate of the first point.
+   * @param {number} x2 - The x-coordinate of the opposite point.
+   * @param {number} y2 - The y-coordinate of the opposite point.
+   */
   drawRectangle(x1, y1, x2, y2) {
     // Correcting the coordinates if necessary
     if (x1 > x2) {
@@ -171,10 +171,10 @@ export class SVWindow {
   }
 
   /**
-     * Allows you to specify the thickness with which to draw lines, recantgles
-     * and ellipses.
-     * @param {number} width The new thickness.
-     */
+   * Allows you to specify the thickness with which to draw lines, recantgles
+   * and ellipses.
+   * @param {number} width The new thickness.
+   */
   setStrokeWidth(width) {
     this.stroke = width;
   }
@@ -185,9 +185,9 @@ export class SVWindow {
   // }
 
   /**
- * Start setting up a new polyline.
- * @param {number} length - Number of coordinate pairs.
- */
+   * Start setting up a new polyline.
+   * @param {number} length - Number of coordinate pairs.
+   */
   createPolyline(length) {
     this.polylineXCoords = new Array(length);
     this.polylineYCoords = new Array(length);
@@ -196,8 +196,8 @@ export class SVWindow {
   }
 
   /**
- * Draw the now complete polyline.
- */
+   * Draw the now complete polyline.
+   */
   drawPolyline() {
     const numCoords = this.polylineXCoords.length;
     if (numCoords < 2) {

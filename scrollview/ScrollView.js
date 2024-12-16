@@ -79,13 +79,13 @@ export class ScrollView {
   }
 
   /**
-     * Parse a comma-separated list of arguments into arrays of different types.
-     * @param {string} argList - The argument list as a string.
-     * @param {number[]} intList - Array to store integers.
-     * @param {number[]} floatList - Array to store floats.
-     * @param {string[]} stringList - Array to store strings.
-     * @param {boolean[]} boolList - Array to store booleans.
-     */
+   * Parse a comma-separated list of arguments into arrays of different types.
+   * @param {string} argList - The argument list as a string.
+   * @param {number[]} intList - Array to store integers.
+   * @param {number[]} floatList - Array to store floats.
+   * @param {string[]} stringList - Array to store strings.
+   * @param {boolean[]} boolList - Array to store booleans.
+   */
   static parseArguments(argList, intList, floatList, stringList, boolList) {
     let str = null;
     const intPattern = /^[0-9-][0-9]*$/;
@@ -187,9 +187,9 @@ export class ScrollView {
   }
 
   /**
-     * Processes a command line input, interpreting and executing it as needed.
-     * @param {string} inputLine - The input command line.
-     */
+   * Processes a command line input, interpreting and executing it as needed.
+   * @param {string} inputLine - The input command line.
+   */
   async processInput(inputLine) {
     if (!inputLine) {
       return;
