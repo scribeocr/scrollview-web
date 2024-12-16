@@ -9,18 +9,24 @@ import { SVWindow } from './ui/SVWindow.js';
  * as this only impacts the polyLine drawing code.
  */
 export class ScrollView {
-  constructor(lightTheme = false) {
-    // This syntax is weird, however defining these functions separately before the ternary causes issues with Webpack.
-    this.createCanvas = typeof process === 'undefined' ? () => (new OffscreenCanvas(200, 200)) : async () => {
-      const { isMainThread } = await import('worker_threads');
-      const { createCanvas } = await import('canvas');
+  /**
+   *
+   * @param {Object} param
+   * @param {boolean} [param.lightTheme=false]
+   * @param {import('canvaskit-wasm').CanvasKit} [param.CanvasKit] - CanvasKit module. Must be defined if running in Node.js.
+   */
+  constructor({
+    lightTheme = false,
+    CanvasKit,
+  }) {
+    if (typeof OffscreenCanvas === 'undefined' && !CanvasKit) {
+      throw new Error('CanvasKit module must be provided in environments that do not support OffscreenCanvas natively (i.e. Node.js).');
+    }
 
-      // The Node.js canvas package does not currently support worker threads
-      // https://github.com/Automattic/node-canvas/issues/1394
-      if (!isMainThread) throw new Error('node-canvas is not currently supported on worker threads.');
+    /** @type {import('canvaskit-wasm').CanvasKit} */
+    this.CanvasKit = /** @type {import('canvaskit-wasm').CanvasKit} */ (CanvasKit);
 
-      return createCanvas(200, 200);
-    };
+    this.createCanvas = typeof process === 'undefined' ? (width, height) => (new OffscreenCanvas(width, height)) : (width, height) => this.CanvasKit.MakeCanvas(width, height);
     this.lightTheme = lightTheme;
     this.svId = getRandomAlphanum(10);
   }
@@ -59,7 +65,7 @@ export class ScrollView {
       let canvasLegend;
       let nonemptyLegend = false;
       if (createLegend) {
-        canvasLegend = await this.createCanvas();
+        canvasLegend = this.createCanvas();
         nonemptyLegend = drawColorLegend(canvasLegend, nameFull, this.windows[key].penColorsRect, this.windows[key].penColorsLine, this.lightTheme);
       }
 
@@ -171,7 +177,7 @@ export class ScrollView {
       }
       console.assert(first);
     } else if (this.imageWaiting) {
-      const image = await SVImageHandler.readImage(inputLine);
+      const image = await SVImageHandler.readImage(inputLine, this.CanvasKit);
       this.windows[this.windowID].drawImageInternal(image, this.imageXPos, this.imageYPos);
       this.imageWaiting = false;
     } else {
@@ -327,7 +333,7 @@ export class ScrollView {
           intList[0], intList[1],
           intList[2], intList[3],
           intList[4], intList[5],
-          intList[6], await this.createCanvas(), this.lightTheme);
+          intList[6], this.createCanvas, this.lightTheme);
       }
     }
   }

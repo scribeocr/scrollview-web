@@ -1,7 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "canvas": "^2.11.2"
+    "canvaskit-wasm": "^0.39.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.20"

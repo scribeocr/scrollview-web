@@ -16,7 +16,10 @@ import { tableMapping } from './constants.js';
 export function writeCanvasNode(key, value, fileBase) {
   const canvas = value.canvas;
 
-  const buffer1 = canvas.toBuffer('image/png');
+  const imgURL = canvas.toDataURL();
+  const imgData = new Uint8Array(atob(imgURL.split(',')[1])
+    .split('')
+    .map((c) => c.charCodeAt(0)));
 
   if (!tableMapping[key]) console.log(`Table ${key} missing from order lookup, defaulting to 0.`);
 
@@ -25,7 +28,7 @@ export function writeCanvasNode(key, value, fileBase) {
 
   const pathFull = `${fileBase}_${orderStr}_${key}.png`;
 
-  fs.writeFileSync(pathFull, buffer1);
+  fs.writeFileSync(pathFull, imgData);
 }
 
 /**

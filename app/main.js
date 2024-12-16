@@ -80,7 +80,9 @@ function toggleInfoBtn() {
 infoBtnElem.addEventListener('click', toggleInfoBtn);
 infoBtnMobileElem.addEventListener('click', toggleInfoBtn);
 
-const sv = new ScrollView(true);
+const sv = new ScrollView({
+  lightTheme: true,
+});
 
 const readFileToArrayBuffer = (blob) => (
   new Promise((resolve, reject) => {

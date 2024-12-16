@@ -29,8 +29,9 @@ export class SVImageHandler {
    * Handles various image formats, always returns a ImageBitmap.
    *
    * @param {string} img
+   * @param {import('canvaskit-wasm').CanvasKit} [CanvasKit] - CanvasKit module. Must be defined if running in Node.js.
    */
-  static async readImage(img) {
+  static async readImage(img, CanvasKit) {
     if (img === undefined) throw new Error('Input is undefined');
     if (img === null) throw new Error('Input is null');
 
@@ -40,9 +41,10 @@ export class SVImageHandler {
       return imgBit;
     }
 
-    const { loadImage } = await import('canvas');
+    if (CanvasKit === undefined) throw new Error('CanvasKit module must be provided in environments that do not support OffscreenCanvas natively (i.e. Node.js).');
+
     const imgBuffer = this.imageStrToBuffer(img);
-    const imgBit = await loadImage(imgBuffer);
+    const imgBit = CanvasKit.MakeImageFromEncoded(imgBuffer);
     return imgBit;
   }
 }

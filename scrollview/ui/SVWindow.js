@@ -16,10 +16,10 @@ export class SVWindow {
    * @param {number} sizeY The height of the window.
    * @param {number} canvasSizeX The canvas width of the window.
    * @param {number} canvasSizeY The canvas height of the window.
-   * @param {*} canvas
+   * @param {*} createCanvas
    * @param {boolean} [lightTheme=false] Assume white background instead of black background.
    */
-  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, canvas, lightTheme = false) {
+  constructor(name, hash, posX, posY, sizeX, sizeY, canvasSizeX, canvasSizeY, createCanvas, lightTheme = false) {
     // Provide defaults for sizes.
     if (sizeX <= 0) sizeX = canvasSizeX;
     if (sizeY <= 0) sizeY = canvasSizeY;
@@ -81,10 +81,8 @@ export class SVWindow {
     this.canvasSizeX = canvasSizeX;
     this.canvasSizeY = canvasSizeY;
 
-    // this.canvas = document.createElement('canvas');
-    this.canvas = canvas;
-    this.canvas.width = this.canvasSizeX;
-    this.canvas.height = this.canvasSizeY;
+    this.canvas = createCanvas(this.canvasSizeX, this.canvasSizeY);
+
     // Add the canvas to the document's body
     // document.body.appendChild(this.canvas);
     this.ctx = /** @type {CanvasRenderingContext2D} */ (this.canvas.getContext('2d'));
