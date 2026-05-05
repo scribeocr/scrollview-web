@@ -26,7 +26,7 @@ export class ScrollView {
 
   async _init() {
     if (this._initDone) return;
-    if (typeof OffscreenCanvas === 'undefined') {
+    if (typeof process !== 'undefined') {
       if (!scribeCanvasPromise) scribeCanvasPromise = import('@scribe.js/canvas');
       const skia = await scribeCanvasPromise;
       this.createCanvas = (width, height) => skia.createCanvas(width, height);
